@@ -453,20 +453,16 @@
 
         // 첫 글자로 암기 문장 만들기
         function createMnemonic(lines) {
-            let words = [];
-            lines.forEach(line => {
-                // 줄바꿈이나 띄어쓰기를 기준으로 단어 분리
-                const lineWords = line.split(/\s+/).filter(w => w.trim().length > 0);
-                words = words.concat(lineWords);
-            });
+            // 각 줄의 첫 글자 추출
+            const firstChars = lines
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .map(line => line.charAt(0));
             
-            // 각 단어의 첫 글자 추출
-            const firstChars = words.map(word => word.charAt(0));
-            
-            // 첫 글자를 활용한 의미있는 문장 생성
+            // 첫 글자들을 합치기
             const mnemonic = firstChars.join('');
             
-            // 2-4글자마다 공백 추가해서 읽기 쉽게
+            // 3글자마다 공백 추가해서 읽기 쉽게
             let formatted = '';
             for (let i = 0; i < mnemonic.length; i++) {
                 formatted += mnemonic[i];

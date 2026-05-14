@@ -231,6 +231,8 @@
         .btn-danger:hover { background: #c0392b; }
         .btn-secondary { background: #95a5a6; color: white; }
         .btn-secondary:hover { background: #7f8c8d; }
+        .btn-purple { background: #8e44ad; color: white; }
+        .btn-purple:hover { background: #6c3483; }
         
         .verse-table-container {
             background: white; border-radius: 10px; padding: 20px;
@@ -240,6 +242,7 @@
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
         th { background: #f8f9fa; font-weight: bold; }
         tr:hover { background: #f1f2f6; }
+        tr:has(.row-chk:checked) { background: #fef9e7; }
         
         /* 모달 스타일 */
         .modal-overlay {
@@ -296,11 +299,21 @@
                 <button class="btn btn-primary" style="padding: 4px 10px; font-size:12px;" onclick="createNewDataset()">새 자료 만들기</button>
                 <button class="btn btn-secondary" style="padding: 4px 10px; font-size:12px;" onclick="renameCurrentDataset()">현재 이름 변경</button>
                 <button class="btn btn-danger" style="padding: 4px 10px; font-size:12px;" onclick="deleteCurrentDataset()">현재 자료 삭제</button>
+                <button class="btn btn-primary" style="padding: 4px 10px; font-size:12px; background:#8e44ad;" onclick="saveAsDataset()">📋 다른 이름으로 저장</button>
+            </div>
+            <!-- 다중 선택 삭제 툴바 -->
+            <div id="bulkDeleteBar" style="display:none; align-items:center; gap:12px; background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:10px 16px; margin-bottom:12px;">
+                <span id="selectedCountLabel" style="font-weight:bold; color:#856404;">0개 선택됨</span>
+                <button class="btn btn-danger" onclick="deleteSelectedVerses()" style="padding:5px 14px;">🗑️ 선택 삭제</button>
+                <button class="btn btn-secondary" onclick="clearSelection()" style="padding:5px 14px;">선택 해제</button>
             </div>
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 50px;">순번</th>
+                        <th style="width: 36px; text-align:center;">
+                            <input type="checkbox" id="selectAllChk" title="전체 선택" onchange="toggleSelectAll(this.checked)" style="width:16px;height:16px;cursor:pointer;">
+                        </th>
+                        <th style="width: 44px;">순번</th>
                         <th style="width: 100px;">장절</th>
                         <th>구절</th>
                         <th>암기 힌트</th>
@@ -641,13 +654,35 @@
             }
         }
 
+        function saveAsDataset() {
+            const defaultName = currentDatasetName + ' (사본)';
+            const newName = prompt(`현재 자료 "${currentDatasetName}"를 다른 이름으로 저장합니다.\n새 이름을 입력하세요:`, defaultName);
+            if (!newName || newName.trim() === '') return;
+            const trimmed = newName.trim();
+            if (bibleDatasets[trimmed]) {
+                if (!confirm(`"${trimmed}" 이름의 자료가 이미 존재합니다. 덮어쓰시겠습니까?`)) return;
+            }
+            // 깊은 복사
+            bibleDatasets[trimmed] = JSON.parse(JSON.stringify(appData));
+            currentDatasetName = trimmed;
+            appData = bibleDatasets[trimmed];
+            saveData();
+            updateDatasetSelector();
+            renderTable();
+            alert(`✅ "${trimmed}" 이름으로 저장되었습니다.`);
+        }
+
         function renderTable() {
             const tbody = document.getElementById('verseTableBody');
             tbody.innerHTML = '';
             
             appData.forEach((v, index) => {
                 const tr = document.createElement('tr');
+                tr.dataset.id = v.id;
                 tr.innerHTML = `
+                    <td style="text-align:center;">
+                        <input type="checkbox" class="row-chk" data-id="${v.id}" onchange="onRowCheckChange()" style="width:16px;height:16px;cursor:pointer;">
+                    </td>
                     <td>${index + 1}</td>
                     <td><b>${v.ref}</b></td>
                     <td style="white-space:pre-wrap; font-size:13px;">${v.lines.join('\n')}</td>
@@ -660,6 +695,47 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // 테이블 새로 그릴 때 전체선택 체크박스·툴바 초기화
+            document.getElementById('selectAllChk').checked = false;
+            document.getElementById('bulkDeleteBar').style.display = 'none';
+        }
+
+        function onRowCheckChange() {
+            const all = document.querySelectorAll('.row-chk');
+            const checked = document.querySelectorAll('.row-chk:checked');
+            document.getElementById('selectAllChk').checked = all.length > 0 && checked.length === all.length;
+            document.getElementById('selectAllChk').indeterminate = checked.length > 0 && checked.length < all.length;
+            const bar = document.getElementById('bulkDeleteBar');
+            if (checked.length > 0) {
+                bar.style.display = 'flex';
+                document.getElementById('selectedCountLabel').textContent = `${checked.length}개 선택됨`;
+            } else {
+                bar.style.display = 'none';
+            }
+        }
+
+        function toggleSelectAll(checked) {
+            document.querySelectorAll('.row-chk').forEach(chk => chk.checked = checked);
+            onRowCheckChange();
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.row-chk').forEach(chk => chk.checked = false);
+            document.getElementById('selectAllChk').checked = false;
+            document.getElementById('selectAllChk').indeterminate = false;
+            document.getElementById('bulkDeleteBar').style.display = 'none';
+        }
+
+        function deleteSelectedVerses() {
+            const checked = document.querySelectorAll('.row-chk:checked');
+            if (checked.length === 0) return;
+            if (!confirm(`선택한 ${checked.length}개 구절을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) return;
+            const ids = new Set([...checked].map(chk => Number(chk.dataset.id)));
+            appData = appData.filter(v => !ids.has(Number(v.id)));
+            bibleDatasets[currentDatasetName] = appData;
+            saveData();
+            renderTable();
         }
 
         function autoGenerateMnemonic() {
@@ -732,6 +808,7 @@
         function deleteVerse(id) {
             if(confirm('정말 이 구절을 삭제하시겠습니까?')) {
                 appData = appData.filter(v => v.id !== id);
+                bibleDatasets[currentDatasetName] = appData;
                 saveData();
                 renderTable();
             }

@@ -56,9 +56,9 @@
         }
         
         .reference {
-            font-size: 54px;
+            font-size: 42px;
             font-weight: bold;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
             text-align: center;
             color: #ffffff;
         }
@@ -185,13 +185,14 @@
         
         .instruction {
             position: fixed;
-            bottom: 100px;
+            bottom: 155px;
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255,255,255,0.6);
-            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
             text-align: center;
             z-index: 1000;
+            white-space: nowrap;
         }
     
         /* 관리자 UI 스타일 */
@@ -264,10 +265,95 @@
         }
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         
-        .top-right-btns {
-            position: fixed; top: 20px; left: 20px; z-index: 1001;
-            display: flex; gap: 10px;
+        .top-right-btns { position: fixed; top: 20px; left: 20px; z-index: 1001; display: flex; gap: 10px; }
+
+        /* ── 모드 버튼 바 ── */
+        .mode-bar { position: fixed; bottom: 105px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 1000; flex-wrap: wrap; justify-content: center; }
+        .mode-bar button { background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.32); color: white; padding: 6px 15px; border-radius: 18px; font-size: 13px; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(8px); font-family: inherit; }
+        .mode-bar button:hover { background: rgba(255,255,255,0.26); }
+        .tts-btn { background: rgba(255,255,255,0.13); border: 2px solid rgba(255,255,255,0.38); color: white; padding: 6px 15px; border-radius: 18px; font-size: 13px; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(8px); font-family: inherit; }
+        .tts-btn:hover { background: rgba(255,255,255,0.26); }
+        .tts-btn.speaking { background: rgba(255,215,0,0.28); border-color:#FFD700; color:#FFD700; }
+
+        /* ── 공통 오버레이 ── */
+        .quiz-overlay, .word-order-overlay, .review-panel { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 4000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .quiz-overlay.active, .word-order-overlay.active, .review-panel.active { display: flex; }
+
+        /* ── 빈칸 퀴즈 ── */
+        .quiz-box { background: #1e1e2e; border-radius: 20px; padding: 36px; max-width: 820px; width: 100%; color: white; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6); max-height: 90vh; overflow-y: auto; }
+        .quiz-ref { font-size: 26px; font-weight: bold; margin-bottom: 14px; color: #FFD700; }
+        .quiz-verse { font-size: 21px; line-height: 2.1; margin-bottom: 18px; }
+        .quiz-blank { display: inline-block; border-bottom: 3px solid #FFD700; min-width: 68px; color: #FFD700; padding: 2px 8px; border-radius: 4px; background: rgba(255,215,0,0.1); }
+        .quiz-blank.active-blank { outline: 2px solid #FFD700; outline-offset: 2px; }
+        .quiz-blank.correct { color: #2ecc71; border-color: #2ecc71; background: rgba(46,204,113,0.15); outline: none; }
+        .quiz-blank.wrong   { color: #e74c3c; border-color: #e74c3c; background: rgba(231,76,60,0.15); outline: none; animation: shake 0.3s; }
+        .quiz-blank.hint-shown { color: #f39c12; border-color: #f39c12; background: rgba(243,156,18,0.12); outline: none; font-style: italic; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+        .quiz-input-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+        .quiz-input { font-size: 18px; padding: 10px 14px; border-radius: 10px; border: 2px solid #555; background: #2a2a3e; color: white; width: 200px; text-align: center; font-family: inherit; }
+        .quiz-result { font-size: 19px; margin-top: 8px; min-height: 26px; }
+        .quiz-score { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
+        .quiz-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+        .quiz-btn { padding: 8px 18px; border: none; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .quiz-btn-primary   { background: #3498db; color: white; } .quiz-btn-primary:hover   { background: #2980b9; }
+        .quiz-btn-warn      { background: #f39c12; color: white; } .quiz-btn-warn:hover      { background: #d68910; }
+        .quiz-btn-success   { background: #27ae60; color: white; } .quiz-btn-success:hover   { background: #219a52; }
+        .quiz-btn-secondary { background: #555;    color: white; } .quiz-btn-secondary:hover { background: #777; }
+
+        /* ── 단어 순서 맞추기 (드래그&드롭) ── */
+        .word-order-box { background: #1e1e2e; border-radius: 20px; padding: 28px; max-width: 900px; width: 100%; color: white; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.6); max-height: 92vh; overflow-y: auto; }
+        .wo-ref  { font-size: 22px; font-weight: bold; color: #FFD700; margin-bottom: 4px; }
+        .wo-sub  { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+        /* 힌트: 각 줄 첫 글자 */
+        .wo-hint-lines { background: rgba(255,255,255,0.07); border-radius: 10px; padding: 10px 16px; margin: 8px 0; font-size: 14px; color: rgba(255,255,255,0.65); line-height: 2; text-align: left; }
+        /* 정답 drop zone */
+        .wo-answer-area { min-height: 60px; border: 2px dashed rgba(255,255,255,0.28); border-radius: 14px; padding: 10px 14px; margin: 8px 0; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; transition: background 0.2s, border-color 0.2s; }
+        .wo-answer-area.drag-over { background: rgba(52,152,219,0.15); border-color: #3498db; }
+        /* 단어 칩 */
+        .wo-chip { padding: 7px 15px; border-radius: 22px; font-size: 15px; font-weight: bold; cursor: grab; user-select: none; transition: transform 0.15s, opacity 0.15s; font-family: inherit; border: none; touch-action: none; display: inline-block; }
+        .wo-chip:active { cursor: grabbing; }
+        .wo-chip.pool-chip { background: #3a3a5c; color: white; }
+        .wo-chip.pool-chip:hover { background: #5050a0; transform: scale(1.06); }
+        .wo-chip.ans-chip  { background: #2980b9; color: white; }
+        .wo-chip.ans-chip:hover  { background: #1f6697; transform: scale(1.04); }
+        .wo-chip.dragging  { opacity: 0.25; transform: scale(0.88); }
+        .wo-chip.correct-chip { background: #27ae60 !important; cursor: default; }
+        .wo-chip.wrong-chip   { background: #c0392b !important; animation: shake 0.35s; }
+        .wo-word-pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 48px; margin: 8px 0; }
+        .wo-feedback { font-size: 19px; min-height: 26px; margin: 6px 0; }
+        .wo-progress { font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+        /* 줄별 정답 행 */
+        .wo-answer-area { flex-direction: column; gap: 6px; align-items: stretch; padding: 10px; }
+        .wo-answer-row {
+            display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+            min-height: 46px; padding: 8px 12px; border-radius: 10px;
+            background: rgba(255,255,255,0.06); border: 1.5px dashed rgba(255,255,255,0.2);
+            transition: background 0.2s, border-color 0.2s;
         }
+        .wo-answer-row.drag-over { background: rgba(52,152,219,0.18); border-color: #3498db; }
+        .wo-row-label {
+            font-size: 12px; color: rgba(255,255,255,0.35);
+            margin-right: 4px; white-space: nowrap; user-select: none;
+        }
+        /* 정답 짧게 보이기 */
+        .wo-answer-reveal { border-radius: 10px; padding: 10px 16px; font-size: 14px; color: #FFD700; margin: 6px 0; display: none; line-height: 1.9; background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); text-align: left; }
+        .wo-answer-reveal.show { display: block; animation: revealFade 3.5s forwards; }
+        @keyframes revealFade { 0%{opacity:0} 8%{opacity:1} 75%{opacity:1} 100%{opacity:0} }
+
+        /* ── 암기 완료 배지 ── */
+        .memorized-badge { position: absolute; top: 18px; right: 18px; font-size: 13px; cursor: pointer; user-select: none; background: rgba(0,0,0,0.22); border-radius: 50px; padding: 5px 12px; transition: all 0.2s; z-index: 10; border: 1.5px solid rgba(255,255,255,0.22); }
+        .memorized-badge:hover { background: rgba(0,0,0,0.42); transform: scale(1.08); }
+        .memorized-badge.done { background: rgba(46,204,113,0.32); border-color: #2ecc71; }
+
+        /* ── 복습 패널 ── */
+        .review-panel-box { background: white; border-radius: 16px; padding: 28px; max-width: 680px; width: 100%; max-height: 88vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+        .review-section { margin-bottom: 20px; }
+        .review-section h3 { font-size: 14px; color: #555; margin-bottom: 8px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+        .review-chip { display: inline-block; padding: 5px 12px; margin: 3px; border-radius: 16px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .chip-today { background: #e74c3c; color: white; } .chip-soon { background: #f39c12; color: white; }
+        .chip-ok    { background: #27ae60; color: white; } .chip-none { background: #ecf0f1; color: #555; }
+        .review-progress-bar { height: 12px; border-radius: 10px; background: #ecf0f1; overflow: hidden; margin: 8px 0; }
+        .review-progress-fill { height: 100%; background: linear-gradient(90deg,#27ae60,#2ecc71); border-radius: 10px; transition: width 0.5s; }
 
     </style>
 </head>
@@ -365,6 +451,68 @@
         </div>
     </div>
 
+    <!-- 모드 버튼 바 -->
+    <div class="mode-bar" id="modeBar">
+        <button onclick="openQuizMode()">📝 빈칸 퀴즈</button>
+        <button onclick="openWordOrderMode()">🔀 순서 맞추기</button>
+        <button id="ttsMainBtn" class="tts-btn" onclick="ttsCurrentSlide()">🔊 읽어주기</button>
+        <button onclick="openReviewPanel()">📅 복습 일정</button>
+    </div>
+
+    <!-- 빈칸 채우기 퀴즈 오버레이 -->
+    <div class="quiz-overlay" id="quizOverlay">
+        <div class="quiz-box">
+            <div class="quiz-score" id="quizScore"></div>
+            <div class="quiz-ref" id="quizRef"></div>
+            <div class="quiz-verse" id="quizVerse"></div>
+            <div class="quiz-input-row">
+                <input class="quiz-input" id="quizInput" placeholder="빈칸 단어 입력" onkeydown="if(event.key==='Enter') checkQuizAnswer()">
+                <button class="quiz-btn quiz-btn-primary" onclick="checkQuizAnswer()">확인</button>
+                <button class="quiz-btn quiz-btn-warn" onclick="showQuizHint()" id="quizHintBtn">💡 힌트</button>
+            </div>
+            <div class="quiz-result" id="quizResult"></div>
+            <div class="quiz-btns">
+                <button class="quiz-btn quiz-btn-secondary" onclick="closeQuiz()">닫기</button>
+                <button class="quiz-btn quiz-btn-secondary" onclick="restartQuiz()">↺ 다시 하기</button>
+                <button class="quiz-btn quiz-btn-secondary" onclick="skipQuiz()">건너뛰기</button>
+                <button class="quiz-btn quiz-btn-secondary" id="quizTtsBtn" onclick="quizTtsAgain()" style="display:none;">🔊 다시 듣기</button>
+                <button class="quiz-btn quiz-btn-primary" id="quizNextBtn" onclick="nextQuiz()" style="display:none;">다음 문제 ▶</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 단어 순서 맞추기 오버레이 (드래그&드롭) -->
+    <div class="word-order-overlay" id="wordOrderOverlay">
+        <div class="word-order-box">
+            <div class="wo-progress" id="woProgress"></div>
+            <div class="wo-ref" id="woRef"></div>
+            <div class="wo-sub">단어를 끌어다 아래 칸에 순서대로 놓으세요</div>
+            <div class="wo-hint-lines" id="woHintLines" style="display:none;"></div>
+            <div class="wo-answer-area" id="woAnswerArea"></div>
+            <div class="wo-word-pool" id="woWordPool" ondragover="woDragOver(event)" ondragleave="woDragLeave(event)" ondrop="woDrop(event,'pool')"></div>
+            <div class="wo-feedback" id="woFeedback"></div>
+            <div class="quiz-btns">
+                <button class="quiz-btn quiz-btn-secondary" onclick="closeWordOrder()">닫기</button>
+                <button class="quiz-btn quiz-btn-warn" onclick="woToggleHint(this)">💡 힌트</button>
+                <button class="quiz-btn quiz-btn-secondary" onclick="woReset()">↺ 다시</button>
+                <button class="quiz-btn quiz-btn-success" onclick="woCheck()">✔ 확인</button>
+                <button class="quiz-btn quiz-btn-secondary" id="woTtsBtn" onclick="woTtsAgain()" style="display:none;">🔊 다시 듣기</button>
+                <button class="quiz-btn quiz-btn-primary" onclick="woNext()">다음 ▶</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 복습 일정 패널 -->
+    <div class="review-panel" id="reviewPanel">
+        <div class="review-panel-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+                <h2 style="margin:0; color:#2c3e50;">📅 복습 일정</h2>
+                <button onclick="closeReviewPanel()" style="background:none;border:none;font-size:22px;cursor:pointer;">✖</button>
+            </div>
+            <div id="reviewPanelContent"></div>
+        </div>
+    </div>
+
     <div class="progress-bar" id="progressBar"></div>
     <div class="slide-counter" id="slideCounter">1 / 147</div>
     
@@ -383,6 +531,8 @@
     </div>
     
     <div class="nav-buttons">
+        <button class="nav-button" id="firstBtn" onclick="goToFirst()" title="처음으로">⏮ 처음</button>
+        <div style="width: 20px;"></div>
         <button class="nav-button" id="prevBtn" onclick="prevSlide()">◀ 이전</button>
         <button class="nav-button" id="nextBtn" onclick="nextSlide()">다음 ▶</button>
     </div>
@@ -919,16 +1069,16 @@
                 const maxLineLength = Math.max(...verse.lines.map(line => line.length));
                 let fontSize;
                 
-                if (maxLineLength < 15) fontSize = '48px';
-                else if (maxLineLength < 20) fontSize = '44px';
-                else if (maxLineLength < 25) fontSize = '38px';
-                else if (maxLineLength < 30) fontSize = '34px';
-                else if (maxLineLength < 35) fontSize = '30px';
-                else if (maxLineLength < 40) fontSize = '28px';
-                else if (maxLineLength < 45) fontSize = '26px';
-                else if (maxLineLength < 50) fontSize = '24px';
-                else if (maxLineLength < 55) fontSize = '22px';
-                else fontSize = '20px';
+                if (maxLineLength < 15) fontSize = '38px';
+                else if (maxLineLength < 20) fontSize = '34px';
+                else if (maxLineLength < 25) fontSize = '30px';
+                else if (maxLineLength < 30) fontSize = '27px';
+                else if (maxLineLength < 35) fontSize = '24px';
+                else if (maxLineLength < 40) fontSize = '22px';
+                else if (maxLineLength < 45) fontSize = '20px';
+                else if (maxLineLength < 50) fontSize = '19px';
+                else if (maxLineLength < 55) fontSize = '18px';
+                else fontSize = '17px';
                 
                 // 줄이 많으면 폰트 크기 조정
                 if (verse.lines.length > 8) {
@@ -951,8 +1101,8 @@
                 
                 // 아이콘 일러스트 (성경 참조 위에 크게 표시)
                 const iconDiv = document.createElement('div');
-                iconDiv.style.fontSize = '120px';
-                iconDiv.style.marginBottom = '20px';
+                iconDiv.style.fontSize = '72px';
+                iconDiv.style.marginBottom = '10px';
                 iconDiv.style.textAlign = 'center';
                 iconDiv.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))';
                 iconDiv.textContent = verse.icon;
@@ -983,13 +1133,13 @@
                 const mnemonicText = verse.mnemonic || createMnemonic(verse.lines);
                 const mnemonicSentence = document.createElement('div');
                 mnemonicSentence.className = 'verse-line mnemonic-sentence';
-                mnemonicSentence.style.fontSize = '32px';
+                mnemonicSentence.style.fontSize = '24px';
                 mnemonicSentence.style.color = '#FFD700';
                 mnemonicSentence.style.fontWeight = 'bold';
-                mnemonicSentence.style.marginTop = '30px';
-                mnemonicSentence.style.padding = '15px 30px';
+                mnemonicSentence.style.marginTop = '18px';
+                mnemonicSentence.style.padding = '10px 22px';
                 mnemonicSentence.style.background = 'rgba(0,0,0,0.2)';
-                mnemonicSentence.style.borderRadius = '15px';
+                mnemonicSentence.style.borderRadius = '12px';
                 mnemonicSentence.textContent = `💡 ${mnemonicText}`;
                 mnemonicSentence.dataset.lineIndex = verse.lines.length;
                 hintContainer.appendChild(mnemonicSentence);
@@ -1080,6 +1230,10 @@
         function prevSlide() {
             showSlide(currentSlide - 1);
         }
+
+        function goToFirst() {
+            showSlide(0);
+        }
         
         // UI 업데이트
         function updateUI() {
@@ -1087,6 +1241,7 @@
             document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${slides.length}`;
             document.getElementById('progressBar').style.width = `${((currentSlide + 1) / slides.length) * 100}%`;
             
+            document.getElementById('firstBtn').disabled = currentSlide === 0;
             document.getElementById('prevBtn').disabled = currentSlide === 0;
             document.getElementById('nextBtn').disabled = currentSlide === slides.length - 1;
         }
@@ -1113,8 +1268,414 @@
             }
         });
         
-        // 초기화
-        loadData();
+        // ══════════════════════════════════════════
+        // ① 암기 완료 체크
+        // ══════════════════════════════════════════
+        let memorizedData = {};
+        function loadMemorized() { try { memorizedData = JSON.parse(localStorage.getItem('bible_memorized')||'{}'); } catch(e){ memorizedData={}; } }
+        function saveMemorized() { localStorage.setItem('bible_memorized', JSON.stringify(memorizedData)); }
+        loadMemorized();
+
+        function attachMemorizedBadges() {
+            document.querySelectorAll('.slide:not(.title-slide)').forEach(slide => {
+                if (slide.querySelector('.memorized-badge')) return;
+                const vid = slide.dataset.verseId; if (!vid) return;
+                const b = document.createElement('div');
+                b.className = 'memorized-badge' + (memorizedData[vid]?.done ? ' done' : '');
+                b.textContent = memorizedData[vid]?.done ? '✅ 암기완료' : '☑️ 암기완료';
+                b.onclick = e => { e.stopPropagation(); toggleMemorized(vid, b); };
+                slide.appendChild(b);
+            });
+        }
+        function toggleMemorized(vid, b) {
+            const on = !memorizedData[vid]?.done;
+            memorizedData[vid] = on ? { done:true, doneAt:Date.now() } : { done:false };
+            b.textContent = on ? '✅ 암기완료' : '☑️ 암기완료';
+            b.classList.toggle('done', on);
+            saveMemorized();
+        }
+        const _origCS = createSlides;
+        createSlides = function() {
+            _origCS();
+            const slides = document.querySelectorAll('.slide:not(.title-slide)');
+            let vi = 0;
+            appData.forEach(v => {
+                if(slides[vi]) { slides[vi].dataset.verseId = v.id; vi++; }
+                if(slides[vi]) { slides[vi].dataset.verseId = v.id; vi++; }
+            });
+            attachMemorizedBadges();
+        };
+
+        // ══════════════════════════════════════════
+        // ② 복습 일정 패널
+        // ══════════════════════════════════════════
+        const REVIEW_INTERVALS = [1,3,7,14,30];
+        let reviewData = {};
+        function loadReview()  { try { reviewData = JSON.parse(localStorage.getItem('bible_review')||'{}'); } catch(e){ reviewData={}; } }
+        function saveReview()  { localStorage.setItem('bible_review', JSON.stringify(reviewData)); }
+        loadReview();
+
+        function scheduleReview(vid, correct) {
+            const r = reviewData[vid] || { level:0 };
+            r.level = correct ? Math.min(r.level+1, REVIEW_INTERVALS.length) : 0;
+            const days = r.level < REVIEW_INTERVALS.length ? REVIEW_INTERVALS[r.level] : 365;
+            r.nextReview = Date.now() + days*86400000;
+            reviewData[vid] = r; saveReview();
+        }
+        function openReviewPanel()  { renderReviewPanel(); document.getElementById('reviewPanel').classList.add('active'); }
+        function closeReviewPanel() { document.getElementById('reviewPanel').classList.remove('active'); }
+
+        function renderReviewPanel() {
+            const now = Date.now();
+            const todayL=[], soonL=[], okL=[], noneL=[];
+            appData.forEach(v => {
+                const r = reviewData[v.id], m = memorizedData[v.id];
+                if (!r) { noneL.push(v); return; }
+                if (r.nextReview <= now) todayL.push(v);
+                else if (r.nextReview <= now+7*86400000) soonL.push(v);
+                else okL.push(v);
+            });
+            const mc = appData.filter(v=>memorizedData[v.id]?.done).length;
+            const pct = appData.length ? Math.round(mc/appData.length*100) : 0;
+            let h = `<div class="review-section"><h3>📊 전체 암기 진도</h3>
+                <div style="font-size:15px;margin-bottom:6px;"><b>${mc}</b> / ${appData.length} 구절 (<b>${pct}%</b>)</div>
+                <div class="review-progress-bar"><div class="review-progress-fill" style="width:${pct}%"></div></div></div>`;
+            if(todayL.length) { h+=`<div class="review-section"><h3>🔴 오늘 복습 (${todayL.length})</h3>`; todayL.forEach(v=>{ h+=`<span class="review-chip chip-today" onclick="closeReviewPanel();jumpToVerse(${v.id})">${v.ref}</span>`; }); h+='</div>'; }
+            if(soonL.length)  { h+=`<div class="review-section"><h3>🟡 이번 주 예정 (${soonL.length})</h3>`; soonL.forEach(v=>{ const d=Math.ceil((reviewData[v.id].nextReview-now)/86400000); h+=`<span class="review-chip chip-soon" onclick="closeReviewPanel();jumpToVerse(${v.id})">${v.ref} <small>(${d}일 후)</small></span>`; }); h+='</div>'; }
+            if(okL.length)    { h+=`<div class="review-section"><h3>🟢 복습 완료 (${okL.length})</h3>`; okL.forEach(v=>{ h+=`<span class="review-chip chip-ok">${v.ref}</span>`; }); h+='</div>'; }
+            if(noneL.length)  { h+=`<div class="review-section"><h3>⬜ 미학습 (${noneL.length})</h3>`; noneL.forEach(v=>{ h+=`<span class="review-chip chip-none" onclick="closeReviewPanel();jumpToVerse(${v.id})">${v.ref}</span>`; }); h+='</div>'; }
+            document.getElementById('reviewPanelContent').innerHTML = h;
+        }
+        function jumpToVerse(vid) {
+            document.querySelectorAll('.slide').forEach((s,i)=>{ if(s.dataset.verseId==vid && s.dataset.slideType==='full') showSlide(i); });
+        }
+
+        // ══════════════════════════════════════════
+        // ③ 빈칸 퀴즈 (힌트 & 정답 보기 포함)
+        // ══════════════════════════════════════════
+        let quizList=[], quizIdx=0, quizCorrect=0, quizTotal=0;
+        let quizBlanks=[], quizAnswers=[], quizBlankIdx=0, quizDone=false;
+
+        function openQuizMode() {
+            quizList = [...appData].filter(v=>v.lines?.length).sort(()=>Math.random()-.5);
+            if (!quizList.length) { alert('구절 데이터가 없습니다.'); return; }
+            quizIdx=0; quizCorrect=0; quizTotal=0;
+            document.getElementById('quizOverlay').classList.add('active');
+            renderQuiz();
+        }
+        function closeQuiz() { speechSynthesis.cancel(); document.getElementById('quizOverlay').classList.remove('active'); }
+
+        function renderQuiz() {
+            quizDone = false;
+            document.getElementById('quizNextBtn').style.display = 'none';
+            document.getElementById('quizTtsBtn').style.display = 'none';
+            document.getElementById('quizHintBtn').disabled = false;
+            const verse = quizList[quizIdx];
+            const words = verse.lines.join(' ').split(/\s+/).filter(Boolean);
+            const cnt = Math.max(1, Math.round(words.length * 0.3));
+            const idxSet = new Set();
+            while(idxSet.size < cnt) idxSet.add(Math.floor(Math.random()*words.length));
+
+            quizAnswers=[]; quizBlanks=[]; quizBlankIdx=0;
+            let pos=0, html='';
+            verse.lines.forEach((line,li) => {
+                line.split(/\s+/).filter(Boolean).forEach(w => {
+                    if(idxSet.has(pos)) {
+                        const bid=`qb${quizBlanks.length}`;
+                        quizBlanks.push(bid);
+                        quizAnswers.push(w.replace(/[.,!?]/g,''));
+                        html += `<span class="quiz-blank" id="${bid}" data-ans="${w.replace(/[.,!?]/g,'')}">　　　</span> `;
+                    } else { html += `<span>${w}</span> `; }
+                    pos++;
+                });
+                if(li<verse.lines.length-1) html+='<br>';
+            });
+
+            document.getElementById('quizRef').textContent = verse.ref;
+            document.getElementById('quizVerse').innerHTML = html;
+            document.getElementById('quizResult').textContent = '';
+            document.getElementById('quizInput').value = '';
+            document.getElementById('quizScore').textContent = `문제 ${quizIdx+1}/${quizList.length}  ·  정답 ${quizCorrect}/${quizTotal}`;
+            if(quizBlanks.length) document.getElementById(quizBlanks[0]).classList.add('active-blank');
+            document.getElementById('quizInput').focus();
+        }
+
+        function checkQuizAnswer() {
+            if(quizDone) return;
+            const input = document.getElementById('quizInput').value.trim();
+            if(!input || quizBlankIdx >= quizBlanks.length) return;
+            const el = document.getElementById(quizBlanks[quizBlankIdx]);
+            const ans = quizAnswers[quizBlankIdx];
+            const ok = input === ans || input.replace(/\s/g,'') === ans.replace(/\s/g,'');
+            quizTotal++;
+            el.textContent = ans;
+            el.classList.remove('active-blank');
+            el.classList.add(ok ? 'correct' : 'wrong');
+            document.getElementById('quizResult').textContent = ok ? '✅ 정답!' : `❌ 오답 (정답: ${ans})`;
+            if(ok) quizCorrect++;
+            else scheduleReview(quizList[quizIdx].id, false);
+            document.getElementById('quizInput').value = '';
+            quizBlankIdx++;
+            if(quizBlankIdx < quizBlanks.length) {
+                document.getElementById(quizBlanks[quizBlankIdx]).classList.add('active-blank');
+                document.getElementById('quizInput').focus();
+            } else {
+                quizDone = true;
+                scheduleReview(quizList[quizIdx].id, quizCorrect === quizTotal);
+                ttsSpeak(quizList[quizIdx].lines.join(' '));
+                document.getElementById('quizScore').textContent = `문제 ${quizIdx+1}/${quizList.length}  ·  정답 ${quizCorrect}/${quizTotal}`;
+                document.getElementById('quizNextBtn').style.display = 'inline-block';
+                document.getElementById('quizTtsBtn').style.display = 'inline-block';
+            }
+        }
+
+        function showQuizHint() {
+            if(quizDone || quizBlankIdx >= quizBlanks.length) return;
+            const el = document.getElementById(quizBlanks[quizBlankIdx]);
+            const ans = quizAnswers[quizBlankIdx];
+            // 첫 글자만 보여주기
+            document.getElementById('quizResult').textContent = `💡 힌트: "${ans.charAt(0)}..."`;
+            // 힌트 버튼 비활성화 (한 번만)
+            document.getElementById('quizHintBtn').disabled = true;
+        }
+
+        function skipQuiz() {
+            if(quizBlankIdx < quizBlanks.length) {
+                const el = document.getElementById(quizBlanks[quizBlankIdx]);
+                el.textContent = quizAnswers[quizBlankIdx];
+                el.classList.add('hint-shown');
+                quizBlankIdx++;
+                if(quizBlankIdx < quizBlanks.length)
+                    document.getElementById(quizBlanks[quizBlankIdx]).classList.add('active-blank');
+                document.getElementById('quizHintBtn').disabled = false;
+            }
+            if(quizBlankIdx >= quizBlanks.length) {
+                quizDone = true;
+                scheduleReview(quizList[quizIdx].id, false);
+                ttsSpeak(quizList[quizIdx].lines.join(' '));
+                document.getElementById('quizNextBtn').style.display = 'inline-block';
+            }
+        }
+
+        function restartQuiz() {
+            quizBlankIdx = 0;
+            renderQuiz();
+        }
+
+        function quizTtsAgain() {
+            ttsSpeak(quizList[quizIdx].lines.join(' '));
+        }
+
+        function nextQuiz() {
+            quizIdx++;
+            quizBlankIdx = 0;
+            if(quizIdx >= quizList.length) { alert(`완료! 정답률: ${quizTotal?Math.round(quizCorrect/quizTotal*100):0}%`); closeQuiz(); return; }
+            renderQuiz();
+        }
+
+        // ══════════════════════════════════════════
+        // ④ 단어 순서 맞추기 — 드래그&드롭
+        // ══════════════════════════════════════════
+        let woList=[], woIdx=0, woCorrect=[], woPool=[], woLines=[];
+        let woDragChip=null, woDragFrom='', woDragFromRow=-1;
+
+        function openWordOrderMode() {
+            woList = [...appData].filter(v=>v.lines?.length).sort(()=>Math.random()-.5);
+            if(!woList.length) { alert('구절 데이터가 없습니다.'); return; }
+            woIdx=0;
+            document.getElementById('wordOrderOverlay').classList.add('active');
+            renderWordOrder();
+        }
+        function closeWordOrder() { speechSynthesis.cancel(); document.getElementById('wordOrderOverlay').classList.remove('active'); }
+
+        function renderWordOrder() {
+            const verse = woList[woIdx % woList.length];
+            // 줄별 단어 배열 저장
+            woLines = verse.lines.map(l => l.split(/\s+/).filter(Boolean));
+            woCorrect = verse.lines.join(' ').split(/\s+/).filter(Boolean);
+            woPool = [...woCorrect].sort(()=>Math.random()-.5);
+
+            document.getElementById('woRef').textContent = verse.ref;
+            document.getElementById('woProgress').textContent = `${woIdx+1} / ${woList.length} 구절`;
+
+            // 힌트 초기화
+            const hintEl = document.getElementById('woHintLines');
+            hintEl.innerHTML = verse.lines.map(l=>`<b>${l.charAt(0)}</b>${l.slice(1)}`).join('<br>');
+            hintEl.style.display = 'none';
+            // 힌트 버튼 텍스트 초기화
+            const hintBtn = document.querySelector('[onclick="woToggleHint(this)"]');
+            if(hintBtn) hintBtn.textContent = '💡 힌트';
+
+            document.getElementById('woFeedback').textContent = '';
+            document.getElementById('woTtsBtn').style.display = 'none';
+
+            // 줄별 정답 행 생성
+            const ansArea = document.getElementById('woAnswerArea');
+            ansArea.innerHTML = '';
+            woLines.forEach((lineWords, rowIdx) => {
+                const row = document.createElement('div');
+                row.className = 'wo-answer-row';
+                row.dataset.rowIdx = rowIdx;
+                // 줄 번호 라벨
+                const label = document.createElement('span');
+                label.className = 'wo-row-label';
+                label.textContent = `${rowIdx+1}줄`;
+                row.appendChild(label);
+                // drag 이벤트
+                row.addEventListener('dragover', e => { e.preventDefault(); row.classList.add('drag-over'); });
+                row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+                row.addEventListener('drop', e => woDropToRow(e, rowIdx));
+                ansArea.appendChild(row);
+            });
+
+            renderWoPool();
+        }
+
+        function woToggleHint(btn) {
+            const hintEl = document.getElementById('woHintLines');
+            const visible = hintEl.style.display !== 'none';
+            hintEl.style.display = visible ? 'none' : 'block';
+            btn.textContent = visible ? '💡 힌트' : '💡 힌트 숨기기';
+        }
+
+        function woTtsAgain() {
+            const verse = woList[woIdx % woList.length];
+            ttsSpeak(verse.lines.join(' '));
+        }
+
+        function renderWoPool() {
+            const pool = document.getElementById('woWordPool');
+            pool.innerHTML = '';
+            // pool drop zone
+            pool.addEventListener('dragover', e => { e.preventDefault(); pool.classList.add('drag-over'); });
+            pool.addEventListener('dragleave', () => pool.classList.remove('drag-over'));
+            pool.addEventListener('drop', e => woDropToPool(e));
+            woPool.forEach((word, i) => {
+                pool.appendChild(makeWoChip(word, i, 'pool', -1));
+            });
+        }
+
+        function makeWoChip(word, idx, zone, rowIdx) {
+            const chip = document.createElement('span');
+            chip.className = `wo-chip ${zone==='pool' ? 'pool-chip' : 'ans-chip'}`;
+            chip.textContent = word;
+            chip.dataset.word = word;
+            chip.dataset.zone = zone;
+            chip.dataset.rowIdx = rowIdx;
+            chip.draggable = true;
+            chip.addEventListener('dragstart', e => {
+                woDragChip = chip;
+                woDragFrom = zone;
+                woDragFromRow = Number(chip.dataset.rowIdx);
+                setTimeout(()=>chip.classList.add('dragging'), 0);
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+            return chip;
+        }
+
+        function woDropToRow(e, rowIdx) {
+            e.preventDefault();
+            const rows = document.querySelectorAll('.wo-answer-row');
+            rows.forEach(r=>r.classList.remove('drag-over'));
+            if(!woDragChip) return;
+            const word = woDragChip.dataset.word;
+
+            // pool → row
+            if(woDragFrom === 'pool') {
+                const pi = woPool.indexOf(word);
+                if(pi !== -1) woPool.splice(pi, 1);
+                renderWoPool();
+            }
+            // row → 다른 row (원래 위치에서 제거)
+            if(woDragFrom === 'answer') {
+                woDragChip.remove();
+            }
+
+            // 해당 row에 칩 추가
+            const row = rows[rowIdx];
+            const newChip = makeWoChip(word, Date.now(), 'answer', rowIdx);
+            row.appendChild(newChip);
+            woDragChip = null;
+            document.getElementById('woFeedback').textContent = '';
+        }
+
+        function woDropToPool(e) {
+            e.preventDefault();
+            document.getElementById('woWordPool').classList.remove('drag-over');
+            if(!woDragChip) return;
+            const word = woDragChip.dataset.word;
+
+            // answer → pool
+            if(woDragFrom === 'answer') {
+                woDragChip.remove();
+                woPool.push(word);
+                renderWoPool();
+            }
+            woDragChip = null;
+            document.getElementById('woFeedback').textContent = '';
+        }
+
+        function woCheck() {
+            const rows = document.querySelectorAll('.wo-answer-row');
+            let allCorrect = true;
+            rows.forEach((row, rowIdx) => {
+                const chips = [...row.querySelectorAll('.wo-chip')];
+                const userWords = chips.map(c=>c.dataset.word);
+                const lineCorrect = woLines[rowIdx];
+                // 이 행의 단어들이 순서·내용 모두 일치하는지
+                const rowOk = JSON.stringify(userWords) === JSON.stringify(lineCorrect);
+                if(rowOk) {
+                    chips.forEach(c=>{ c.classList.add('correct-chip'); c.draggable=false; });
+                } else {
+                    allCorrect = false;
+                    chips.forEach((c,i)=>{
+                        if(c.dataset.word !== (lineCorrect[i]||'')) {
+                            c.classList.add('wrong-chip');
+                            setTimeout(()=>c.classList.remove('wrong-chip'), 700);
+                        }
+                    });
+                }
+            });
+
+            if(allCorrect) {
+                document.getElementById('woFeedback').textContent = '🎉 정답입니다!';
+                scheduleReview(woList[woIdx%woList.length].id, true);
+                ttsSpeak(woList[woIdx%woList.length].lines.join(' '));
+                document.getElementById('woTtsBtn').style.display = 'inline-block';
+            } else {
+                document.getElementById('woFeedback').textContent = '❌ 틀린 단어가 있어요. 다시 조정해 보세요!';
+                scheduleReview(woList[woIdx%woList.length].id, false);
+            }
+        }
+
+        function woReset() { renderWordOrder(); }
+        function woNext() {
+            woIdx++;
+            if(woIdx >= woList.length) { alert('모든 구절 완료! 🎉'); closeWordOrder(); return; }
+            renderWordOrder();
+        }
+
+        // ══════════════════════════════════════════
+        // ⑤ TTS
+        // ══════════════════════════════════════════
+        function ttsSpeak(text) {
+            if(!window.speechSynthesis) return;
+            speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang='ko-KR'; u.rate=0.85;
+            const btn = document.getElementById('ttsMainBtn');
+            u.onstart = ()=>btn.classList.add('speaking');
+            u.onend = u.onerror = ()=>btn.classList.remove('speaking');
+            speechSynthesis.speak(u);
+        }
+        function ttsCurrentSlide() {
+            const slides = document.querySelectorAll('.slide');
+            const s = slides[currentSlide]; if(!s) return;
+            const v = appData.find(x=>String(x.id)===String(s.dataset.verseId));
+            if(v) ttsSpeak(v.ref+'. '+v.lines.join(' '));
+        }
+
     </script>
 </body>
 </html>

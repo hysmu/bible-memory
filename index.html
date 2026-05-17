@@ -1555,6 +1555,81 @@
             });
         }
 
+        let activeTouchClone = null;
+        let lastDropZone = null;
+
+        function handleTouchStart(e) {
+            if(e.touches.length > 1) return;
+            const chip = e.target.closest('.wo-chip');
+            if(!chip || chip.classList.contains('correct-chip')) return;
+            e.preventDefault(); // 스크롤 방지
+            
+            woDragChip = chip;
+            woDragFrom = chip.dataset.zone;
+            woDragFromRow = Number(chip.dataset.rowIdx);
+            
+            chip.classList.add('dragging');
+            
+            const touch = e.touches[0];
+            activeTouchClone = chip.cloneNode(true);
+            activeTouchClone.style.position = 'fixed';
+            activeTouchClone.style.left = touch.clientX + 'px';
+            activeTouchClone.style.top = touch.clientY + 'px';
+            activeTouchClone.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            activeTouchClone.style.opacity = '0.9';
+            activeTouchClone.style.zIndex = '9999';
+            activeTouchClone.style.pointerEvents = 'none'; // 클론이 elementFromPoint 가리는 것 방지
+            document.body.appendChild(activeTouchClone);
+        }
+
+        function handleTouchMove(e) {
+            if(!activeTouchClone) return;
+            e.preventDefault(); // 스크롤 방지
+            const touch = e.touches[0];
+            activeTouchClone.style.left = touch.clientX + 'px';
+            activeTouchClone.style.top = touch.clientY + 'px';
+            
+            const el = document.elementFromPoint(touch.clientX, touch.clientY);
+            const dropZoneRow = el ? el.closest('.wo-answer-row') : null;
+            const dropZonePool = el ? el.closest('.wo-word-pool') : null;
+            const currentDropZone = dropZoneRow || dropZonePool;
+            
+            if(lastDropZone && lastDropZone !== currentDropZone) {
+                lastDropZone.classList.remove('drag-over');
+            }
+            if(currentDropZone) {
+                currentDropZone.classList.add('drag-over');
+            }
+            lastDropZone = currentDropZone;
+        }
+
+        function handleTouchEnd(e) {
+            if(!activeTouchClone) return;
+            
+            const touch = e.changedTouches[0];
+            const el = document.elementFromPoint(touch.clientX, touch.clientY);
+            
+            if(lastDropZone) {
+                lastDropZone.classList.remove('drag-over');
+                lastDropZone = null;
+            }
+            
+            const dropZoneRow = el ? el.closest('.wo-answer-row') : null;
+            const dropZonePool = el ? el.closest('.wo-word-pool') : null;
+            
+            if (dropZoneRow) {
+                const rowIdx = Number(dropZoneRow.dataset.rowIdx);
+                woDropToRow({ preventDefault:()=>{} }, rowIdx);
+            } else if (dropZonePool) {
+                woDropToPool({ preventDefault:()=>{} });
+            }
+            
+            if(woDragChip) woDragChip.classList.remove('dragging');
+            if(activeTouchClone) activeTouchClone.remove();
+            activeTouchClone = null;
+            woDragChip = null;
+        }
+
         function makeWoChip(word, idx, zone, rowIdx) {
             const chip = document.createElement('span');
             chip.className = `wo-chip ${zone==='pool' ? 'pool-chip' : 'ans-chip'}`;
@@ -1571,6 +1646,13 @@
                 e.dataTransfer.effectAllowed = 'move';
             });
             chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+
+            // 터치 이벤트 (아이패드/모바일 드래그 지원)
+            chip.addEventListener('touchstart', handleTouchStart, {passive: false});
+            chip.addEventListener('touchmove', handleTouchMove, {passive: false});
+            chip.addEventListener('touchend', handleTouchEnd);
+            chip.addEventListener('touchcancel', handleTouchEnd);
+
             return chip;
         }
 
@@ -1599,6 +1681,7 @@
             woDragChip = null;
             document.getElementById('woFeedback').textContent = '';
         }
+
 
         function woDropToPool(e) {
             e.preventDefault();

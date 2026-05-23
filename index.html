@@ -2454,7 +2454,7 @@
             }
 
             try {
-                const applause = new Audio('./applause.ogg');
+                const applause = new Audio('./applause.wav');
                 applause.volume = 0.8;
                 applause.play().catch(err => console.log('Applause audio error:', err));
                 
@@ -2710,6 +2710,8 @@ function checkQuizAnswer(isAuto = false) {
 
         let activeTouchClone = null;
         let lastDropZone = null;
+        let touchOffsetX = 0;
+        let touchOffsetY = 0;
 
         function handleTouchStart(e) {
             if(e.touches.length > 1) return;
@@ -2723,12 +2725,17 @@ function checkQuizAnswer(isAuto = false) {
             
             chip.classList.add('dragging');
             
+            const box = chip.getBoundingClientRect();
             const touch = e.touches[0];
+            touchOffsetX = touch.clientX - box.left;
+            touchOffsetY = touch.clientY - box.top;
+            
             activeTouchClone = chip.cloneNode(true);
             activeTouchClone.style.position = 'fixed';
-            activeTouchClone.style.left = touch.clientX + 'px';
-            activeTouchClone.style.top = touch.clientY + 'px';
-            activeTouchClone.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            activeTouchClone.style.margin = '0';
+            activeTouchClone.style.left = (touch.clientX - touchOffsetX) + 'px';
+            activeTouchClone.style.top = (touch.clientY - touchOffsetY) + 'px';
+            activeTouchClone.style.transform = 'scale(1.05)';
             activeTouchClone.style.opacity = '0.9';
             activeTouchClone.style.zIndex = '9999';
             activeTouchClone.style.pointerEvents = 'none'; 
@@ -2739,8 +2746,8 @@ function checkQuizAnswer(isAuto = false) {
             if(!activeTouchClone) return;
             e.preventDefault(); 
             const touch = e.touches[0];
-            activeTouchClone.style.left = touch.clientX + 'px';
-            activeTouchClone.style.top = touch.clientY + 'px';
+            activeTouchClone.style.left = (touch.clientX - touchOffsetX) + 'px';
+            activeTouchClone.style.top = (touch.clientY - touchOffsetY) + 'px';
             
             const el = document.elementFromPoint(touch.clientX, touch.clientY);
             const dropZoneRow = el ? el.closest('.wo-answer-row') : null;

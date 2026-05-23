@@ -2416,7 +2416,7 @@
                 playNote(783.99, 0.2, 0.4); 
                 playNote(1046.50, 0.3, 0.8); 
 
-                const bufferSize = ctx.sampleRate * 2; 
+                const bufferSize = ctx.sampleRate * 6; 
                 const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
                 const data = buffer.getChannelData(0);
                 for (let i = 0; i < bufferSize; i++) {
@@ -2432,9 +2432,9 @@
                 
                 const gainNode = ctx.createGain();
                 gainNode.gain.setValueAtTime(0, ctx.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.3); 
-                gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 1.0); 
-                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2.0); 
+                gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.5); 
+                gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 3.0); 
+                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 6.0); 
                 
                 noiseSource.connect(filter);
                 filter.connect(gainNode);
@@ -2455,7 +2455,7 @@
             playTTS(msg.replace(/[🎉✨👏🎊🌟]/g, ''));
             setTimeout(() => {
                 if(readVerseFallback) readVerseFallback();
-            }, 2500);
+            }, 4500);
         }
 
 function checkQuizAnswer(isAuto = false) {

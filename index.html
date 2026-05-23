@@ -121,7 +121,9 @@
             border-top-color: rgba(0,0,0,0.85);
         }
         .reference:hover::after,
-        .reference:hover::before {
+        .reference:hover::before,
+        .reference.active-tooltip::after,
+        .reference.active-tooltip::before {
             opacity: 1;
             visibility: visible;
             transform: translateX(-50%) translateY(-5px);
@@ -142,7 +144,11 @@
         .quiz-ref:hover::after,
         .wo-ref:hover::after,
         .quiz-ref:hover::before,
-        .wo-ref:hover::before {
+        .wo-ref:hover::before,
+        .quiz-ref.active-tooltip::after,
+        .wo-ref.active-tooltip::after,
+        .quiz-ref.active-tooltip::before,
+        .wo-ref.active-tooltip::before {
             opacity: 1;
             visibility: visible;
             transform: translateX(-50%) translateY(5px);
@@ -1566,6 +1572,40 @@
         let bibleDatasets = { "기본 자료": [] };
         let currentDatasetName = "기본 자료";
         let appData = []; // reference to bibleDatasets[currentDatasetName]
+                function bindTooltipEvents(el, summaryText) {
+            if (!summaryText) return;
+            el.dataset.tooltip = summaryText;
+            
+            // Mouse events for PC
+            el.addEventListener('mouseenter', () => playTTS(summaryText));
+            el.addEventListener('mouseleave', () => stopTTS());
+            
+            // Click/Touch events for Mobile
+            el.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const isActive = el.classList.contains('active-tooltip');
+                
+                document.querySelectorAll('.active-tooltip').forEach(node => {
+                    node.classList.remove('active-tooltip');
+                });
+                
+                if (isActive) {
+                    stopTTS();
+                } else {
+                    el.classList.add('active-tooltip');
+                    playTTS(summaryText);
+                }
+            });
+        }
+        
+        document.addEventListener('click', () => {
+            const activeTooltips = document.querySelectorAll('.active-tooltip');
+            if (activeTooltips.length > 0) {
+                activeTooltips.forEach(node => node.classList.remove('active-tooltip'));
+                stopTTS();
+            }
+        });
+
         const STORAGE_KEY = 'bible_memory_verses_data';
 
         function loadData() {
@@ -2079,9 +2119,7 @@
                 ref1.className = 'reference';
                 ref1.textContent = verse.ref;
                 if(verse.summary) {
-                    ref1.dataset.tooltip = verse.summary;
-                    ref1.addEventListener('mouseenter', () => playTTS(verse.summary));
-                    ref1.addEventListener('mouseleave', stopTTS);
+                    bindTooltipEvents(ref1, verse.summary);
                 }
                 hintSlide.appendChild(ref1);
                 
@@ -2134,9 +2172,7 @@
                 ref2.className = 'reference';
                 ref2.textContent = verse.ref;
                 if(verse.summary) {
-                    ref2.dataset.tooltip = verse.summary;
-                    ref2.addEventListener('mouseenter', () => playTTS(verse.summary));
-                    ref2.addEventListener('mouseleave', stopTTS);
+                    bindTooltipEvents(ref2, verse.summary);
                 }
                 fullSlide.appendChild(ref2);
                 
@@ -2371,9 +2407,7 @@
             const newQRef = qRef.cloneNode(false);
             newQRef.textContent = verse.ref;
             if(verse.summary) {
-                newQRef.dataset.tooltip = verse.summary;
-                newQRef.addEventListener('mouseenter', () => playTTS(verse.summary));
-                newQRef.addEventListener('mouseleave', stopTTS);
+                bindTooltipEvents(newQRef, verse.summary);
             }
             qRef.replaceWith(newQRef);
             document.getElementById('quizVerse').innerHTML = html;
@@ -2573,9 +2607,7 @@ function checkQuizAnswer(isAuto = false) {
             const newWRef = wRef.cloneNode(false);
             newWRef.textContent = verse.ref;
             if(verse.summary) {
-                newWRef.dataset.tooltip = verse.summary;
-                newWRef.addEventListener('mouseenter', () => playTTS(verse.summary));
-                newWRef.addEventListener('mouseleave', stopTTS);
+                bindTooltipEvents(newWRef, verse.summary);
             }
             wRef.replaceWith(newWRef);
             document.getElementById('woProgress').textContent = `${woIdx+1} / ${woList.length} 구절`;

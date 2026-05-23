@@ -2460,20 +2460,20 @@
                 noiseSource.buffer = buffer;
                 
                 const filter = ctx.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.frequency.value = 800; 
-                filter.Q.value = 0.5; 
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(2500, ctx.currentTime);
                 
                 const gainNode = ctx.createGain();
+                gainNode.gain.value = 0;
                 gainNode.gain.setValueAtTime(0, ctx.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.5); 
-                gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 3.0); 
+                gainNode.gain.linearRampToValueAtTime(1.0, ctx.currentTime + 0.2); 
+                gainNode.gain.linearRampToValueAtTime(0.8, ctx.currentTime + 3.0); 
                 gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 6.0); 
                 
                 noiseSource.connect(filter);
                 filter.connect(gainNode);
                 gainNode.connect(ctx.destination);
-                noiseSource.start();
+                noiseSource.start(ctx.currentTime);
             } catch (e) {
                 console.error("Audio API error", e);
             }

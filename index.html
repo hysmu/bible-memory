@@ -1818,6 +1818,7 @@
                     <td>${v.icon || ''}</td>
                     <td>
                         <button class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="openModal('edit', ${v.id})">수정</button>
+                        <button class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="duplicateVerse(${v.id})">복제</button>
                         <button class="btn btn-danger" style="padding:4px 8px; font-size:12px;" onclick="deleteVerse(${v.id})">삭제</button>
                     </td>
                 `;
@@ -1939,6 +1940,23 @@
         function deleteVerse(id) {
             if(confirm('정말 이 구절을 삭제하시겠습니까?')) {
                 appData = appData.filter(v => v.id !== id);
+                bibleDatasets[currentDatasetName] = appData;
+                saveData();
+                renderTable();
+            }
+        }
+
+        function duplicateVerse(id) {
+            const verseToCopy = appData.find(v => v.id === id);
+            if(verseToCopy) {
+                // 객체 깊은 복사
+                const newVerse = JSON.parse(JSON.stringify(verseToCopy));
+                newVerse.id = Date.now(); // 새로운 고유 ID 부여
+                
+                // 원본 바로 뒤에 삽입
+                const idx = appData.findIndex(v => v.id === id);
+                appData.splice(idx + 1, 0, newVerse);
+                
                 bibleDatasets[currentDatasetName] = appData;
                 saveData();
                 renderTable();

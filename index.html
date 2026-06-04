@@ -2437,6 +2437,65 @@
         }
 
         
+        const bibleBooks = {
+            "창": "창세기", "출": "출애굽기", "레": "레위기", "민": "민수기", "신": "신명기",
+            "수": "여호수아", "삿": "사사기", "룻": "룻기", "삼상": "사무엘상", "삼하": "사무엘하",
+            "왕상": "열왕기상", "왕하": "열왕기하", "대상": "역대상", "대하": "역대하", "스": "에스라",
+            "느": "느헤미야", "에": "에스더", "욥": "욥기", "시": "시편", "잠": "잠언",
+            "전": "전도서", "아": "아가", "사": "이사야", "렘": "예레미야", "애": "예레미야애가",
+            "겔": "에스겔", "단": "다니엘", "호": "호세아", "욜": "요엘", "암": "아모스",
+            "옵": "오바댜", "욘": "요나", "미": "미가", "나": "나훔", "합": "하박국",
+            "습": "스바냐", "학": "학개", "슥": "스가랴", "말": "말라기",
+            "마": "마태복음", "막": "마가복음", "눅": "누가복음", "요": "요한복음", "행": "사도행전",
+            "롬": "로마서", "고전": "고린도전서", "고후": "고린도후서", "갈": "갈라디아서",
+            "엡": "에베소서", "빌": "빌립보서", "골": "골로새서", "살전": "데살로니가전서",
+            "살후": "데살로니가후서", "딤전": "디모데전서", "딤후": "디모데후서", "딛": "디도서",
+            "몬": "빌레몬서", "히": "히브리서", "약": "야고보서", "벧전": "베드로전서",
+            "벧후": "베드로후서", "요일": "요한일서", "요이": "요한이서", "요삼": "요한삼서",
+            "유": "유다서", "계": "요한계시록"
+        };
+
+        function readSinoKoreanNum(numStr) {
+            const n = parseInt(numStr, 10);
+            const u = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+            if (n < 10) return u[n];
+            if (n < 100) {
+                const tens = Math.floor(n/10);
+                const ones = n % 10;
+                return (tens === 1 ? '십' : u[tens] + '십') + (ones ? u[ones] : '');
+            }
+            const hundreds = Math.floor(n/100);
+            const rem = n % 100;
+            let res = (hundreds === 1 ? '백' : u[hundreds] + '백');
+            if (rem > 0) {
+                const tens = Math.floor(rem/10);
+                const ones = rem % 10;
+                if (tens === 0) {
+                    res += (ones ? u[ones] : '');
+                } else {
+                    res += (tens === 1 ? '십' : u[tens] + '십') + (ones ? u[ones] : '');
+                }
+            }
+            return res;
+        }
+
+        function formatRefForTTS(refStr) {
+            if(!refStr) return '';
+            let text = refStr;
+            
+            text = text.replace(/^([가-힣]+)\s*/, (match, p1) => {
+                return (bibleBooks[p1] || p1) + " ";
+            });
+            
+            text = text.replace(/(\d+):(\d+)-(\d+)/g, (match, ch, v1, v2) => {
+                return readSinoKoreanNum(ch) + '장 ' + readSinoKoreanNum(v1) + '에서 ' + readSinoKoreanNum(v2) + '절';
+            });
+            text = text.replace(/(\d+):(\d+)/g, (match, ch, v) => {
+                return readSinoKoreanNum(ch) + '장 ' + readSinoKoreanNum(v) + '절';
+            });
+            return text;
+        }
+
         const successMessages = [
             "🎉 정답입니다! 정말 잘하셨어요!",
             "✨ 완벽해요! 대단합니다!",
@@ -2527,9 +2586,9 @@
                 document.getElementById('quizTtsBtn').style.display = 'inline-block';
                 
                 if(quizCorrect === quizTotal) {
-                    triggerSuccessEffect('quizResult', quizList[quizIdx].lines.join(' '));
+                    triggerSuccessEffect('quizResult', formatRefForTTS(quizList[quizIdx].ref) + '. ' + quizList[quizIdx].lines.join(' '));
                 } else {
-                    ttsSpeak(quizList[quizIdx].lines.join(' '));
+                    ttsSpeak(formatRefForTTS(quizList[quizIdx].ref) + '. ' + quizList[quizIdx].lines.join(' '));
                 }
             }
         }
@@ -2557,7 +2616,7 @@
             if(quizBlankIdx >= quizBlanks.length) {
                 quizDone = true;
                 scheduleReview(quizList[quizIdx].id, false);
-                ttsSpeak(quizList[quizIdx].lines.join(' '));
+                ttsSpeak(formatRefForTTS(quizList[quizIdx].ref) + '. ' + quizList[quizIdx].lines.join(' '));
                 document.getElementById('quizNextBtn').style.display = 'inline-block';
             }
         }
@@ -2568,7 +2627,7 @@
         }
 
         function quizTtsAgain() {
-            ttsSpeak(quizList[quizIdx].lines.join(' '));
+            ttsSpeak(formatRefForTTS(quizList[quizIdx].ref) + '. ' + quizList[quizIdx].lines.join(' '));
         }
 
         function nextQuiz() {
@@ -2690,7 +2749,7 @@
 
         function woTtsAgain() {
             const verse = woList[woIdx % woList.length];
-            ttsSpeak(verse.lines.join(' '));
+            ttsSpeak(formatRefForTTS(verse.ref) + '. ' + verse.lines.join(' '));
         }
 
         function renderWoPool() {
@@ -2862,7 +2921,7 @@
 
             if(allCorrect) {
                 scheduleReview(woList[woIdx%woList.length].id, true);
-                triggerSuccessEffect('woFeedback', woList[woIdx%woList.length].lines.join(' '));
+                triggerSuccessEffect('woFeedback', formatRefForTTS(woList[woIdx%woList.length].ref) + '. ' + woList[woIdx%woList.length].lines.join(' '));
                 document.getElementById('woTtsBtn').style.display = 'inline-block';
             } else if (!isAuto) {
                 document.getElementById('woFeedback').textContent = '❌ 틀린 단어가 있어요. 다시 조정해 보세요!';
@@ -2894,7 +2953,7 @@
             const slides = document.querySelectorAll('.slide');
             const s = slides[currentSlide]; if(!s) return;
             const v = appData.find(x=>String(x.id)===String(s.dataset.verseId));
-            if(v) ttsSpeak(v.ref+'. '+v.lines.join(' '));
+            if(v) ttsSpeak(formatRefForTTS(v.ref)+'. '+v.lines.join(' '));
         }
 
         window.addEventListener('DOMContentLoaded', loadData);
